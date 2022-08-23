@@ -1,46 +1,47 @@
 package com.chargebee.stepdefinitons;
 
+import com.chargebee.common.UI.LoginPage;
+import com.chargebee.common.features.GetTpDetails;
+import com.chargebee.qbo.UI.QBSyncPage;
+import com.factory.MerchantFactory;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import net.serenitybdd.rest.Ensure;
+import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.actions.Open;
 
+import static com.chargebee.common.features.GetTpDetails.fetchThirdPartyDetails;
+import static com.chargebee.common.features.Sync.runSyncJob;
+import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MerchantStepDefinition {
 
-    private Response response;
-
-    @Given("^(?:.*) is the merchant")
-    public void actor_is_the_merchant() {
-        //actor.remember("merchant", MerchantFactory.getMerchant(actor.getName()));
+    @Given("{actor} is a merchant")
+    public void actor_is_a_merchant(Actor actor) {
+        actor.remember("merchant", MerchantFactory.getMerchant(actor.getName()));
     }
 
-    @When("^(?:.*) attempts to fetch <integration_name> Integration Configuration")
-    public void actor_attempts_to_fetch_particular_integration_configuration(DataTable integ_name) {
-        String username = "test_VaPtEoC3nsnYJNRaFP0puyWWwMqPUPTs";
-        String password = "test_VaPtEoC3nsnYJNRaFP0puyWWwMqPUPTs";
-
-        response = RestAssured.given().contentType(ContentType.JSON)
-                .auth().basic(username, password)
-                .log()
-                .all()
-                .basePath("/third_party_configurations")
-                .baseUri("https://neha-singla-test.chargebee.com/api/v2")
-                .queryParam("integration_name", integ_name.toString())
-                .when().get().then().extract().response();
+    @When("{actor} attempts to fetch <integration_name> Integration Configuration")
+    public void actor_attempts_to_fetch_particular_integration_configuration(Actor actor,DataTable integ_name) {
+        String integration_name = integ_name.asMaps(String.class, String.class).get(0).get("integration_name");
+        theActorInTheSpotlight().attemptsTo(fetchThirdPartyDetails(integration_name));
     }
 
+    @Then("{actor} should able to fetch Integration Configuration")
+    public void actor_should_able_to_fetch_integration_configuration(Actor actor) {
+        assertThat(GetTpDetails.getCompanyName()).isEqualTo("Chargebee Inc");
+    }
 
-    @Then("^(?:.*) should able to fetch Integration Configuration")
-    public void actor_should_able_to_fetch_integration_configuration() {
-        String qb_company_name = response.jsonPath().getString("third_party_configuration.config_json.qb_company_name");
-        Ensure.that("Company name is Chargebee Inc", company_name -> qb_company_name.equals(company_name));
-        assertThat(qb_company_name).isEqualTo("Chargebee Inc");
-        //assertThat("Chargebee Inc").isEqualTo("Chargebee Inc");
+    @When("{actor} attempts to run sync job for <integration_name>")
+    public void actor_attempts_to_run_sync_job_for_particulat_integration(Actor actor, DataTable integ_name) {
+        theActorInTheSpotlight().attemptsTo(runSyncJob());
+    }
+
+    @Then("{actor} should be able to run sync successfully")
+    public void actor_should_be_able_to_run_sync_successfully(Actor actor) {
+        assertThat("Sync scuccessful").isEqualTo("Sync scuccessful");
+
     }
 }
