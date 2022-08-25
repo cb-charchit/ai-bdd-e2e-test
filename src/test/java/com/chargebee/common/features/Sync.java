@@ -5,6 +5,7 @@ import com.chargebee.qbo.UI.QBSyncPage;
 import net.serenitybdd.screenplay.Performable;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.actions.Open;
+import net.thucydides.core.annotations.Step;
 
 public class Sync {
 

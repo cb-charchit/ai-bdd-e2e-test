@@ -6,6 +6,10 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import net.serenitybdd.screenplay.Performable;
 import net.serenitybdd.screenplay.Task;
+import net.thucydides.core.annotations.Step;
+
+import static io.restassured.RestAssured.given;
+//import static net.serenitybdd.rest.SerenityRest.given;
 
 public class GetTpDetails {
 
@@ -25,7 +29,7 @@ public class GetTpDetails {
         String password = "test_VaPtEoC3nsnYJNRaFP0puyWWwMqPUPTs";
 
         ExtractableResponse<Response> response =
-                RestAssured.given().contentType(ContentType.JSON)
+                given().contentType(ContentType.JSON)
                         .auth().basic(username, password)
                         .log()
                         .all()
