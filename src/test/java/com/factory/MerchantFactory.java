@@ -1,15 +1,17 @@
 package com.factory;
 
-import com.chargebee.common.models.Merchant;
-import com.chargebee.common.models.User;
+import com.chargebee.Site;
+import com.chargebee.*;
+import com.chargebee.User;
 import org.openqa.selenium.InvalidArgumentException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MerchantFactory {
 
     public static Merchant getMerchant(String merchantName) {
-        String domainSuffix = System.getProperty("com.chargebee.api.domain.suffix");
+        String domainSuffix = System.getProperty("chargebee.com");
         if ("adminBot".equals(merchantName)) {
             return adminBot(domainSuffix);
         }
@@ -19,10 +21,20 @@ public class MerchantFactory {
 
     private static Merchant adminBot(String domainSuffix) {
         {
-            User user = new User("Neha", "Singla", "neha.singla@chargebee.com", "Neha@1121");
+            ItemFamily e2ePocFamily = new ItemFamily("e2e_poc_family");
+            HashMap<String, PricePoint> pricePoints = new HashMap<>();
+
+            Plan e2e_poc_plan_monthly = new Plan("e2e_poc_plan", "e2e_poc_plan", e2ePocFamily);
+            PricePoint usdMonthly = new PricePoint("e2e_poc_plan-USD-Monthly", e2e_poc_plan_monthly, new FlatFee(new Money( Currency.USD,10)), BillingFrequency.MONTHLY);
+            pricePoints.put(usdMonthly.id, usdMonthly);
+
+            ProductCatalog productCatalog = new ProductCatalog(pricePoints);
+
+            User user = new User("Neha", "Singla", "neha.singla+pc2@chargebee.com", "Neha@1121");
             ArrayList<User> users = new ArrayList<>();
             users.add(user);
-            return new Merchant("adminBot", "neha-singla-test" + domainSuffix);
+            return new Merchant("adminBot",
+                    new Site(domainSuffix, "neha-singla-pc2-test", "test_Pt8zayBmpp7Buc6zacd3xcNyzqBNcd89UY", productCatalog, users));
         }
     }
 }

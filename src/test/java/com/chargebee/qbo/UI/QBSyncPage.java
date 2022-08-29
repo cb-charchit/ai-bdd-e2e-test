@@ -16,7 +16,7 @@ import org.openqa.selenium.By;
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isClickable;
 import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
 
-@DefaultUrl("https://neha-singla-test.integrations.chargebee.com/quickbooks")
+@DefaultUrl("https://neha-singla-pc2-test.integrations.chargebee.com/quickbooks")
 public class QBSyncPage extends PageObject {
     public static final Target SYNC_NOW = Target.the("Sync now").located(By.id("cb-integ-sync-now"));
 

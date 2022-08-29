@@ -1,6 +1,6 @@
 package com.chargebee.common.UI;
 
-import com.chargebee.common.models.User;
+import com.chargebee.*;
 import net.serenitybdd.screenplay.Performable;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.actions.Click;

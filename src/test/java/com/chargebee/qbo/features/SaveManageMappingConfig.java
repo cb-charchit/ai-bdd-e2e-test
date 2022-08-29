@@ -16,7 +16,7 @@ import org.openqa.selenium.WebDriver;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.containsString;
 
-@RunWith(SerenityRunner.class)
+//@RunWith(SerenityRunner.class)
 public class SaveManageMappingConfig {
 
     @Managed
@@ -32,7 +32,7 @@ public class SaveManageMappingConfig {
         );
     }
 
-    @Test
+    //@Test
     public void when_saving_manage_mapping_config() {
 
         admin.should(seeThat(TheWebPage.title(), containsString("User Login - Chargebee")));

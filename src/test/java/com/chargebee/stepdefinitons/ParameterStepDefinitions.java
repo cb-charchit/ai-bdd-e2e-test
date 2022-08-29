@@ -1,5 +1,6 @@
 package com.chargebee.stepdefinitons;
 
+import com.chargebee.Currency;
 import io.cucumber.java.Before;
 import io.cucumber.java.ParameterType;
 import net.serenitybdd.screenplay.Actor;
@@ -11,6 +12,11 @@ public class ParameterStepDefinitions {
     @ParameterType(".*")
     public Actor actor(String actorName) {
         return OnStage.theActorCalled(actorName);
+    }
+
+    @ParameterType(".*")
+    public Currency currency(String currencyStr) {
+        return Currency.valueOf(currencyStr);
     }
 
     @Before
