@@ -6,7 +6,7 @@ Feature: Fetch Third party Integration Configuration
     When adminBot attempts to fetch particular Integration Configuration
       | integration_name   |
       | <integration_name> |
-    Then adminBot should able to fetch Integration Configuration
+    Then adminBot should be able to fetch Integration Configuration
     Examples:
       | integration_name |
       | quickbooks       |

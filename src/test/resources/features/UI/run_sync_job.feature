@@ -1,4 +1,5 @@
 @merchant=adminBot
+@ignore
 Feature: Run Sync Job for Third party Integration
 
   Scenario: Admin runs sync job for Third party Integration
