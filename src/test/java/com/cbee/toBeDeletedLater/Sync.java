@@ -39,8 +39,8 @@ public class Sync {
 
         user.should(seeThat(TheWebPage.title(), containsString("User Login - Chargebee")));
 
-        user.attemptsTo(LoginTask.login(),
-                SyncTask.sync()
+        user.attemptsTo(new LoginTask().login(),
+                new SyncTask().sync()
         );
 
     }

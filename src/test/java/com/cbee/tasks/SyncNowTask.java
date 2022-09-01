@@ -7,12 +7,14 @@ import net.serenitybdd.screenplay.actions.Open;
 
 public class SyncNowTask {
 
+    //private SyncNowTask() {}
+
     public static Performable runSyncJob()
     {
         return Task.where("{0} run sync job", actor -> {
             actor.attemptsTo(Open.browserOn().the(QBSyncPage.class),
-                    LoginTask.login(),
-                    SyncTask.sync());
+                    new LoginTask().login(),
+                    new SyncTask().sync());
             });
         }
     }

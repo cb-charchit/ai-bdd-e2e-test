@@ -36,7 +36,7 @@ public class SaveManageMappingConfig {
         admin.should(seeThat(TheWebPage.title(), containsString("User Login - Chargebee")));
 
         admin.attemptsTo(
-                LoginTask.login(),
+                new LoginTask().login(),
                 ManageMappingPage.saveAccountDetails()
         );
     }
