@@ -27,47 +27,50 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MerchantStepDefinition {
 
+    private GetTpDetailsTask getTpDetailsTask = new GetTpDetailsTask();
+    private SyncNowTask syncNowTask = new SyncNowTask();
+
     @Given("{actor} is an admin of the domain")
     public void actor_is_an_admin_of_the_domain(Actor actor) {
         actor.remember("merchant", MerchantFactory.getMerchant(actor.getName()));
     }
 
-    @When("{actor} attempts to fetch particular Integration Configuration")
-    public void actor_attempts_to_fetch_particular_integration_configuration(Actor actor,DataTable integ_name) {
+    @When("he attempts to fetch particular Integration Configuration")
+    public void actor_attempts_to_fetch_particular_integration_configuration(DataTable integ_name) {
         String integration_name = integ_name.asMaps(String.class, String.class).get(0).get("integration_name");
-        theActorInTheSpotlight().attemptsTo(new GetTpDetailsTask().fetchTpIntegConfDetails(integration_name));
+        theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpIntegConfDetails(integration_name));
     }
 
-    @Then("{actor} should be able to fetch Integration Configuration")
-    public void actor_should_able_to_fetch_integration_configuration(Actor actor) {
+    @Then("he should be able to fetch Integration Configuration")
+    public void actor_should_able_to_fetch_integration_configuration() {
         Assertions.assertThat(ActorState.configInTheSpotLight());
     }
 
-    @When("{actor} attempts to run sync job for <integration_name>")
-    public void actor_attempts_to_run_sync_job_for_particulat_integration(Actor actor, DataTable integ_name) {
-        theActorInTheSpotlight().attemptsTo(SyncNowTask.runSyncJob());
+    @When("he attempts to run sync job for <integration_name>")
+    public void actor_attempts_to_run_sync_job_for_particulat_integration(DataTable integ_name) {
+        theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
     }
 
-    @Then("{actor} checked and found that sync job completed successfully")
-    public void actor_should_be_able_to_run_sync_successfully(Actor actor) {
+    @Then("he checked and found that sync job completed successfully")
+    public void actor_should_be_able_to_run_sync_successfully() {
         assertThat("Sync scuccessful").isEqualTo("Sync scuccessful");
 
     }
 
-    @And("{actor} creates a new customer {string} with the email address {string} and a {string}")
-    public void the_merchant_creates_a_new_customer(Actor actor, String firstName, String email, String cardDetail) {
+    @And("he creates a new customer {string} with the email address {string} and a {string}")
+    public void actor_creates_a_new_customer(String firstName, String email, String cardDetail) {
         theActorInTheSpotlight().attemptsTo(
                 CreateCustomer.using(firstName, email, cardDetail).on(ActorState.theTestSiteInTheSpotlight()).via(api())
         );
     }
 
-    @And("{actor} has a plan {string} with the monthly amount of {int} {currency}")
-    public void theMerchantHasAPlanWithTheMonthlyAmountOf(Actor actor, String planName, int monthlyValue, Currency currency) {
+    @And("he has a plan {string} with the monthly amount of {int} {currency}")
+    public void actor_has_a_plan_with_the_monthly_amount_of(String planName, int monthlyValue, Currency currency) {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
 
-    @And("{actor} creates a {string} subscription for {string} with the following values")
-    public void the_merchant_creates_subscription_for_customer(Actor actor, String subscriptionType, String customerName, DataTable dataTable) throws Exception {
+    @And("he creates a {string} subscription for {string} with the following values")
+    public void actor_creates_subscription_for_customer(String subscriptionType, String customerName, DataTable dataTable) throws Exception {
         CreateSubscriptionRequest createSubscriptionRequest =
                 CreateSubscriptionRequest.fromMap(ActorState.theTestSiteInTheSpotlight().productCatalog, dataTable.asMap());
         ActorState.setTheCreateSubscriptionRequestInTheSpotLight(createSubscriptionRequest);
@@ -78,7 +81,7 @@ public class MerchantStepDefinition {
     }
     @Then("the customer and invoice should be synced to third party")
     public void the_customer_and_invoice_should_be_synced_to_third_party() {
-        theActorInTheSpotlight().attemptsTo(new GetTpDetailsTask().fetchTpemDetails(ActorState.theCustomerInTheSpotlight().getId(), "customer", "quickbooks"));
+        theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpemDetails(ActorState.theCustomerInTheSpotlight().getId(), "customer", "quickbooks"));
         theActorInTheSpotlight().attemptsTo(Ensure.that(thirdPartyIdInTheSpotLight()).isNotBlank());
     }
 

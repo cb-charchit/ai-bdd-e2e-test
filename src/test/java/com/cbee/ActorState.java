@@ -11,8 +11,7 @@ import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 
 public class ActorState {
 
-    private ActorState()
-    {}
+    private ActorState() {}
 
     public static void setTheNewlyCreatedCustomerInTheSpotLight(Customer customer) {
         theActorInTheSpotlight().remember("new_customer", customer);
