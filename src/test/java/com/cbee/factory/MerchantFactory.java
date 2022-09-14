@@ -28,11 +28,11 @@ public class MerchantFactory {
 
             ProductCatalog productCatalog = new ProductCatalog(pricePoints);
 
-            User user = new User("Neha", "Singla", "neha.singla+pc2@chargebee.com", "Neha@1121");
+            User user = new User("Neha", "Singla", "", "");
             ArrayList<User> users = new ArrayList<>();
             users.add(user);
             return new Merchant("Rajat",
-                    new Site(domainSuffix, "neha-singla-pc2-test", "test_Pt8zayBmpp7Buc6zacd3xcNyzqBNcd89UY", productCatalog, users));
+                    new Site(domainSuffix, "", "", productCatalog, users));
         }
     }
 }
