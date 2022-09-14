@@ -32,7 +32,7 @@ public class MerchantFactory {
             ArrayList<User> users = new ArrayList<>();
             users.add(user);
             return new Merchant("adminBot",
-                    new Site(domainSuffix, "neha-singla-pc2-test", "test_Pt8zayBmpp7Buc6zacd3xcNyzqBNcd89UY", productCatalog, users));
+                    new Site(domainSuffix, "", "", productCatalog, users));
         }
     }
 }
