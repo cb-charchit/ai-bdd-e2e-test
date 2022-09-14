@@ -28,7 +28,7 @@ public class MerchantFactory {
 
             ProductCatalog productCatalog = new ProductCatalog(pricePoints);
 
-            User user = new User("Neha", "Singla", "neha.singla+pc2@chargebee.com", "Neha@1121");
+            User user = new User("Neha", "Singla", "", "");
             ArrayList<User> users = new ArrayList<>();
             users.add(user);
             return new Merchant("adminBot",
