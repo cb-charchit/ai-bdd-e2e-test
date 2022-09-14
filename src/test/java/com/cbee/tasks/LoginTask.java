@@ -13,7 +13,7 @@ import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisi
 public class LoginTask {
 
     public static Performable login() {
-        User user = new User("Neha", "Singla", "neha.singla@chargebee.com", "Neha@1121");
+        User user = new User("Neha", "Singla", "", "");
 
         return Task.where("{0} attempts to login", actor -> {
             actor.attemptsTo(
