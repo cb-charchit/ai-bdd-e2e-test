@@ -2,6 +2,7 @@ package com.cbee.tasks;
 
 import com.cbee.models.User;
 import com.cbee.pages.LoginPage;
+import com.cbee.utils.ConfigFileReader;
 import net.serenitybdd.screenplay.Performable;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.actions.Click;
@@ -13,13 +14,12 @@ import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisi
 public class LoginTask {
 
     public static Performable login() {
-        User user = new User("Neha", "Singla", "", "");
 
         return Task.where("{0} attempts to login", actor -> {
             actor.attemptsTo(
                     WaitUntil.the(LoginPage.USERNAME, isVisible()).forNoMoreThan(20).seconds(),
-                    Enter.theValue(user.getEmail()).into(LoginPage.USERNAME),
-                    Enter.theValue(user.getPassword()).into(LoginPage.PASSWORD),
+                    Enter.theValue(new ConfigFileReader().getConfigValueByKey("siteUserName")).into(LoginPage.USERNAME),
+                    Enter.theValue(new ConfigFileReader().getConfigValueByKey("sitePassword")).into(LoginPage.PASSWORD),
                     Click.on(LoginPage.SIGNIN_BUTTON)
             );
         });

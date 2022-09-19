@@ -38,6 +38,16 @@ public class GetTpDetailsTask {
         return (response.jsonPath().getString("third_party_configuration.config_json") != null);
     }
 
+    public Performable getAuthJson(String integ_name) {
+        return Task.where("{0} fetches auth json configuration", actor -> {
+            String basePath = "/third_party_configurations";
+            params.put("integration_name", integ_name);
+            ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
+            String authJson=  response.jsonPath().getString("third_party_configuration.auth_json.access_token");
+           // new QboIntegration().setAccessToken(authJson);
+        });
+    }
+
     public String getTpemData(Optional<String> id, String entity_type, String integ_name) {
         String basePath = "/third_party_entity_mappings/retrieve";
         params.put("integration_name", integ_name);
@@ -46,4 +56,5 @@ public class GetTpDetailsTask {
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
         return response.jsonPath().getString("third_party_entity_mapping.third_party_entity_id");
     }
+
 }

@@ -1,6 +1,7 @@
 package com.cbee.stepdefinitons;
 
 import com.cbee.ActorState;
+import com.cbee.clients.CbClient;
 import com.cbee.models.Currency;
 import com.cbee.models.InteractionMode;
 import com.cbee.models.InteractionModeApi;
@@ -10,6 +11,8 @@ import com.cbee.tasks.subscription.CreateSubscription;
 import com.cbee.models.subscription.CreateSubscriptionRequest;
 import com.cbee.tasks.GetTpDetailsTask;
 import com.cbee.factory.MerchantFactory;
+import com.chargebee.models.Customer;
+import com.google.gson.Gson;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -20,17 +23,24 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.ensure.Ensure;
 import org.assertj.core.api.Assertions;
 
+import static com.cbee.ActorState.setTheCustomerInTheSpotLight;
 import static com.cbee.ActorState.thirdPartyIdInTheSpotLight;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import org.json.JSONObject;
+
+import java.util.LinkedHashMap;
+import java.util.logging.Logger;
 
 public class MerchantStepDefinition {
 
     private GetTpDetailsTask getTpDetailsTask = new GetTpDetailsTask();
     private SyncNowTask syncNowTask = new SyncNowTask();
 
-    @Given("{actor} is an admin of the domain")
+    @Given("{actor} is an admin of current ChargeBee site")
     public void actor_is_an_admin_of_the_domain(Actor actor) {
         actor.remember("merchant", MerchantFactory.getMerchant(actor.getName()));
     }
@@ -79,14 +89,46 @@ public class MerchantStepDefinition {
                 CreateSubscription.using(createSubscriptionRequest).forThe(ActorState.theCustomerInTheSpotlight()).on(ActorState.theTestSiteInTheSpotlight()).via(api())
         );
     }
+
     @Then("the customer and invoice should be synced to third party")
     public void the_customer_and_invoice_should_be_synced_to_third_party() {
         theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpemDetails(ActorState.theCustomerInTheSpotlight().getId(), "customer", "quickbooks"));
         theActorInTheSpotlight().attemptsTo(Ensure.that(thirdPartyIdInTheSpotLight()).isNotBlank());
     }
 
+    @And("he has synced invoice {string} to QBO")
+    public void actor_has_synced_invoice(String invId) {
+        // We don't need to do anything as we are already having an invoice
+    }
+
     private InteractionMode api() {
         return new InteractionModeApi();
+    }
+
+    @When("he attempts to verify if invoice is present in {string}")
+    public void he_attempts_to_verify_if_invoice_is_present(String integration_name) {
+        theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpIntegConfDetails(integration_name));
+    }
+
+    @And("he has a customer {string} with the email address {string} and a {string}")
+    public void he_has_a_customer_with_the_email_address_and_a_visa_card(String customerHanlde, String email, String card) {
+        ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHanlde);
+        Gson gson = new Gson();
+        String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
+        Customer customer = new Customer(json);
+        com.cbee.models.Customer cust = com.cbee.models.Customer.fromCbCustomer(customer);
+        setTheCustomerInTheSpotLight(cust);
+    }
+
+    @And("he has a <item_type> with <unit_amount> and <quantity> and currency {string}")
+    public void he_has_a_item_with_amount_and_quantity(String currency, DataTable data) {
+        // We don't need to do anything as we are already setting this during merchant creation step in test execution.
+    }
+
+    @When("he attempts to run sync job for {string}")
+    public void he_attempts_to_run_sync_job(String integrationName) {
+        System.out.println("Running sync for integration: " + integrationName);
+        theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
     }
 
 }
