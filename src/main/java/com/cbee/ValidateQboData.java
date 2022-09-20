@@ -1,6 +1,8 @@
 package com.cbee;
 
+import com.cbee.api.FetchEntitiesFromQuickbooks;
 import com.cbee.clients.QBOClient;
+import com.cbee.integ.models.quickbooks.QBInvoice;
 import com.cbee.utils.ConfigFileReader;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -9,15 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ValidateQboData {
-
-   /* public static void main(String[] args) {
-        try {
-
-            checkIfRecordIsPresentInQBO("quickbooks", "invoice", "821");
-        } catch (Exception e) {
-            System.out.println("Something went wrong : " + e);
-        }
-    }*/
 
     public static void checkIfRecordIsPresentInQBO(String integ_name, String entity_type, String id) {
         Authentication authService = new AuthenticationService();
@@ -30,12 +23,18 @@ public class ValidateQboData {
         params.put("minorversion", "65");
 
         ExtractableResponse<Response> response = qbClient.doHttpGet(basePath, params, t.getAccess_token());
-        String amt = response.jsonPath().getString("Invoice.TotalAmt");
 
         if (response.statusCode() == 401) {
             authService.refreshTheToken();
             ExtractableResponse<Response> response1 = qbClient.doHttpGet(basePath, params, t.getAccess_token());
             System.out.println(response1.statusCode());
         }
+    }
+
+    public static void validateSyncedInvoice(String qbInvId, String amount) {
+
+        QBInvoice qbInvoice = new FetchEntitiesFromQuickbooks().fetchQuickbooksInvoiceByQBInvId(qbInvId);
+        long syncedInvoiceAmount = qbInvoice.totalAmount();
+
     }
 }

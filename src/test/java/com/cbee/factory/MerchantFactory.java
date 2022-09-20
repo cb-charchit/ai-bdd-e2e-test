@@ -36,6 +36,10 @@ public class MerchantFactory {
             PricePoint nonRecurringAddon = new PricePoint("ff_non_recurring_addon-USD-Monthly", ffNonRecurringAddon, new FlatFee(new Money( Currency.USD,10)), BillingFrequency.MONTHLY);
             pricePoints.put(nonRecurringAddon.id, nonRecurringAddon);
 
+            Plan per_unit_plan = new Plan("per_unit_plan", "per_unit_plan", bddFamily);
+            PricePoint usdMonthlyPerUnit = new PricePoint("per_unit_plan-USD-Monthly", per_unit_plan, new PerUnit(new Money( Currency.USD,100)), BillingFrequency.MONTHLY);
+            pricePoints.put(usdMonthlyPerUnit.id, usdMonthlyPerUnit);
+
             ProductCatalog productCatalog = new ProductCatalog(pricePoints);
 
             ConfigFileReader config = new ConfigFileReader();

@@ -133,8 +133,8 @@ public class MerchantStepDefinition {
         theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
     }
 
-    @Then("invoice should be synced to Quickbooks")
-    public void invoice_should_be_synced_to_quickbooks() {
+    @Then("invoice with amount {string} should be synced to Quickbooks")
+    public void invoice_with_amount_should_be_synced_to_quickbooks(String amount) {
         Subscription subscription = ActorState.theNewlyCreatedSubscriptionInTheSpotlight();
         String basePath="/invoices";
         Map<String, String> params = new HashMap<>();
@@ -150,9 +150,8 @@ public class MerchantStepDefinition {
         JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
         theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpemDetails
                 (Optional.of((String) invoiceJsonObject.get("id")), "invoice", "quickbooks"));
-        String invoiceExternalId = ActorState.thirdPartyIdInTheSpotLight();
-        theActorInTheSpotlight().attemptsTo(Ensure.that(invoiceExternalId).isNotBlank());
-        ValidateQboData.checkIfRecordIsPresentInQBO("quickbooks","invoice",invoiceExternalId);
+        String qbInvId = ActorState.thirdPartyIdInTheSpotLight();
+        theActorInTheSpotlight().attemptsTo(Ensure.that(qbInvId).isNotBlank());
+        ValidateQboData.validateSyncedInvoice(qbInvId, amount);
     }
-
 }

@@ -15,11 +15,11 @@ import static io.restassured.RestAssured.given;
 
 public class QBOClient {
 
-    //String baseUrl = "https://sandbox-quickbooks.api.intuit.com";
     private final String Authorization = "Authorization";
     private final String Bearer = "Bearer";
 
-    public ExtractableResponse<Response> doHttpGet(String basePath, Map params, String accessToken) {
+    public ExtractableResponse<Response> doHttpGet(String basePath, Map<String, String> params, String accessToken) {
+        params.put("minorversion", "65");
         ExtractableResponse<Response> res = given().contentType(ContentType.JSON)
                 .accept("application/json")
                 .header(Authorization, Bearer + " " + accessToken)
