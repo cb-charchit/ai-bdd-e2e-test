@@ -1,6 +1,7 @@
 package com.cbee.stepdefinitons;
 
 import com.cbee.ActorState;
+import com.cbee.ValidateQboData;
 import com.cbee.clients.CbClient;
 import com.cbee.models.Currency;
 import com.cbee.models.InteractionMode;
@@ -12,6 +13,7 @@ import com.cbee.models.subscription.CreateSubscriptionRequest;
 import com.cbee.tasks.GetTpDetailsTask;
 import com.cbee.factory.MerchantFactory;
 import com.chargebee.models.Customer;
+import com.chargebee.models.Subscription;
 import com.google.gson.Gson;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -32,7 +34,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import org.json.JSONObject;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class MerchantStepDefinition {
@@ -129,6 +131,28 @@ public class MerchantStepDefinition {
     public void he_attempts_to_run_sync_job(String integrationName) {
         System.out.println("Running sync for integration: " + integrationName);
         theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
+    }
+
+    @Then("invoice should be synced to Quickbooks")
+    public void invoice_should_be_synced_to_quickbooks() {
+        Subscription subscription = ActorState.theNewlyCreatedSubscriptionInTheSpotlight();
+        String basePath="/invoices";
+        Map<String, String> params = new HashMap<>();
+        params.put("subscription_id[is]", subscription.id());
+        ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
+        Gson gson = new Gson();
+        ArrayList listOfInvoiceMaps = response.jsonPath().getJsonObject("list");
+        if(listOfInvoiceMaps.size() != 1) {
+            throw new RuntimeException("Expected invoice count for subscription id: " + subscription.id()
+                    + " is 1 but found "+listOfInvoiceMaps.size());
+        }
+        String invoiceJson = gson.toJson(((LinkedHashMap)listOfInvoiceMaps.get(0)).get("invoice"), LinkedHashMap.class);
+        JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
+        theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpemDetails
+                (Optional.of((String) invoiceJsonObject.get("id")), "invoice", "quickbooks"));
+        String invoiceExternalId = ActorState.thirdPartyIdInTheSpotLight();
+        theActorInTheSpotlight().attemptsTo(Ensure.that(invoiceExternalId).isNotBlank());
+        ValidateQboData.checkIfRecordIsPresentInQBO("quickbooks","invoice",invoiceExternalId);
     }
 
 }

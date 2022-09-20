@@ -19,13 +19,14 @@ public class QBOClient {
     private final String Authorization = "Authorization";
     private final String Bearer = "Bearer";
 
-    public ExtractableResponse<Response> doHttpGet(String basePath, Map params, String accessToken) throws IOException {
+    public ExtractableResponse<Response> doHttpGet(String basePath, Map params, String accessToken) {
         ExtractableResponse<Response> res = given().contentType(ContentType.JSON)
+                .accept("application/json")
                 .header(Authorization, Bearer + " " + accessToken)
                 .log()
                 .all()
                 .basePath(basePath)
-                .baseUri(new ConfigFileReader().getBaseUrl())
+                .baseUri(new ConfigFileReader().getConfigValueByKey("prod.baseUrl"))
                 .queryParams(params)
                 .when().get().then().extract();
         return res;
