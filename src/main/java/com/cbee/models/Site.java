@@ -151,16 +151,17 @@ public class Site {
         }
 
         for (int i = 0; i < createSubscriptionRequest.chargePricePoints.size(); i++) {
+            int addonCount= createSubscriptionRequest.addonPricePoints.size();
             createSubscriptionWithItemsRequest =
                     createSubscriptionWithItemsRequest
-                            .subscriptionItemItemPriceId(i + 1 + createSubscriptionRequest.addonPricePoints.size(),
+                            .subscriptionItemItemPriceId(i + 1 + addonCount,
                                     createSubscriptionRequest.chargePricePoints.get(i).id);
             PricePoint pricePoint = createSubscriptionRequest.chargePricePoints.get(i);
             if (pricePoint.hasQuantity()) {
                 createSubscriptionWithItemsRequest =
                         pricePoint.isQuantityInInteger().get()
-                                ? createSubscriptionWithItemsRequest.subscriptionItemQuantity(i + 1, pricePoint.getQuantity().get().intValue())
-                                : createSubscriptionWithItemsRequest.subscriptionItemQuantityInDecimal(i  + 1, pricePoint.getQuantity().get().toString());
+                                ? createSubscriptionWithItemsRequest.subscriptionItemQuantity(i + 1 + addonCount, pricePoint.getQuantity().get().intValue())
+                                : createSubscriptionWithItemsRequest.subscriptionItemQuantityInDecimal(i  + 1 + addonCount, pricePoint.getQuantity().get().toString());
             }
         }
 

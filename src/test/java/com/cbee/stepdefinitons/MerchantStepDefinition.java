@@ -2,7 +2,9 @@ package com.cbee.stepdefinitons;
 
 import com.cbee.ActorState;
 import com.cbee.ValidateQboData;
+import com.cbee.api.FetchEntitiesFromQuickbooks;
 import com.cbee.clients.CbClient;
+import com.cbee.integ.models.quickbooks.QBInvoice;
 import com.cbee.models.Currency;
 import com.cbee.models.InteractionMode;
 import com.cbee.models.InteractionModeApi;
@@ -81,8 +83,8 @@ public class MerchantStepDefinition {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
 
-    @And("he creates a {string} subscription for {string} with the following values")
-    public void actor_creates_subscription_for_customer(String subscriptionType, String customerName, DataTable dataTable) throws Exception {
+    @And("he creates a new subscription for {string} with the following values")
+    public void actor_creates_subscription_for_customer(String customerName, DataTable dataTable) throws Exception {
         CreateSubscriptionRequest createSubscriptionRequest =
                 CreateSubscriptionRequest.fromMap(ActorState.theTestSiteInTheSpotlight().productCatalog, dataTable.asMap());
         ActorState.setTheCreateSubscriptionRequestInTheSpotLight(createSubscriptionRequest);
@@ -112,8 +114,8 @@ public class MerchantStepDefinition {
         theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpIntegConfDetails(integration_name));
     }
 
-    @And("he has a customer {string} with the email address {string} and a {string}")
-    public void he_has_a_customer_with_the_email_address_and_a_visa_card(String customerHanlde, String email, String card) {
+    @And("he has a customer {string} with the email address {string}")
+    public void he_has_a_customer_with_the_email_address(String customerHanlde, String email) {
         ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHanlde);
         Gson gson = new Gson();
         String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
@@ -122,50 +124,51 @@ public class MerchantStepDefinition {
         setTheCustomerInTheSpotLight(cust);
     }
 
-    @And("he has a <item_type> with <unit_amount> and <quantity> and currency {string}")
+    @And("he has a <item> with <unit_amount> and <quantity> and currency {string}")
     public void he_has_a_item_with_amount_and_quantity(String currency, DataTable data) {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
 
-    @And("he has a metered pricing_model of quantity 250")
-    public void he_has_a_pricing_model_with_amount_and_quantity(DataTable data) {
+    @And("he has a metered pricing_model with the following tiers")
+    public void he_has_a_pricing_model_with_tiers(DataTable data) {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
 
-    @When("he attempts to run sync job for {string}")
-    public void he_attempts_to_run_sync_job(String integrationName) {
-        System.out.println("Running sync for integration: " + integrationName);
+    @When("he attempts to run sync job for Quickbooks")
+    public void he_attempts_to_run_sync_job() {
         theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
     }
 
-    @Then("invoice with amount {string} should be synced to Quickbooks")
-    public void invoice_with_amount_should_be_synced_to_quickbooks(String amount) {
+    @Then("invoice with amount {long} should be synced to Quickbooks")
+    public void invoice_with_amount_should_be_synced_to_quickbooks(long amount) {
         Subscription subscription = ActorState.theNewlyCreatedSubscriptionInTheSpotlight();
-        String basePath="/invoices";
+        String basePath = "/invoices";
         Map<String, String> params = new HashMap<>();
         params.put("subscription_id[is]", subscription.id());
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
         Gson gson = new Gson();
         ArrayList listOfInvoiceMaps = response.jsonPath().getJsonObject("list");
-        if(listOfInvoiceMaps.size() != 1) {
+        if (listOfInvoiceMaps.size() != 1) {
             throw new RuntimeException("Expected invoice count for subscription id: " + subscription.id()
-                    + " is 1 but found "+listOfInvoiceMaps.size());
+                    + " is 1 but found " + listOfInvoiceMaps.size());
         }
-        String invoiceJson = gson.toJson(((LinkedHashMap)listOfInvoiceMaps.get(0)).get("invoice"), LinkedHashMap.class);
+        String invoiceJson = gson.toJson(((LinkedHashMap) listOfInvoiceMaps.get(0)).get("invoice"), LinkedHashMap.class);
         JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
-        theActorInTheSpotlight().attemptsTo(getTpDetailsTask.fetchTpemDetails
-                (Optional.of((String) invoiceJsonObject.get("id")), "invoice", "quickbooks"));
-        String qbInvId = ActorState.thirdPartyIdInTheSpotLight();
-        theActorInTheSpotlight().attemptsTo(Ensure.that(qbInvId).isNotBlank());
-        ValidateQboData.validateSyncedInvoice(qbInvId, amount);
+        String qbInvId = new GetTpDetailsTask().getTpemData(Optional.of((String) invoiceJsonObject.get("id")), "invoice", "quickbooks");
+        Ensure.that(qbInvId).isNotBlank();
+        QBInvoice qbInvoice = new FetchEntitiesFromQuickbooks().fetchQuickbooksInvoiceByQBInvId(qbInvId);
+        assertThat(qbInvoice).isNotNull();
+        long syncedInvoiceAmount = qbInvoice.totalAmount();
+        //assertThat(syncedInvoiceAmount).isEqualTo(amount);
+        theActorInTheSpotlight().attemptsTo(Ensure.that(syncedInvoiceAmount).isEqualTo(amount));
     }
 
-
-    @Then("invoice should be synced to Quickbooks with {float}")
-    public void invoiceShouldBeSyncedToQuickbooksWithExcepted_amount(float amount) {
-    }
 
     @And("he has a plan with {string} and quantity {int}")
-    public void heHasAPlanWithPricing_modelAndQuantityOf(String model, int arg0,DataTable data) {
+    public void heHasAPlanWithPricing_modelAndQuantityOf(String model, int arg0, DataTable data) {
+    }
+
+    @And("he has a <item> with <amount> and currency {string}")
+    public void he_has_a_item_type_with_amount_and_currency(String currency, DataTable data) {
     }
 }
