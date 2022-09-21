@@ -127,6 +127,11 @@ public class MerchantStepDefinition {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
 
+    @And("he has a metered pricing_model of quantity 250")
+    public void he_has_a_pricing_model_with_amount_and_quantity(DataTable data) {
+        // We don't need to do anything as we are already setting this during merchant creation step in test execution.
+    }
+
     @When("he attempts to run sync job for {string}")
     public void he_attempts_to_run_sync_job(String integrationName) {
         System.out.println("Running sync for integration: " + integrationName);
@@ -153,5 +158,14 @@ public class MerchantStepDefinition {
         String qbInvId = ActorState.thirdPartyIdInTheSpotLight();
         theActorInTheSpotlight().attemptsTo(Ensure.that(qbInvId).isNotBlank());
         ValidateQboData.validateSyncedInvoice(qbInvId, amount);
+    }
+
+
+    @Then("invoice should be synced to Quickbooks with {float}")
+    public void invoiceShouldBeSyncedToQuickbooksWithExcepted_amount(float amount) {
+    }
+
+    @And("he has a plan with {string} and quantity {int}")
+    public void heHasAPlanWithPricing_modelAndQuantityOf(String model, int arg0,DataTable data) {
     }
 }

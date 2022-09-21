@@ -4,7 +4,6 @@ import com.cbee.models.*;
 import com.cbee.utils.ConfigFileReader;
 import org.openqa.selenium.InvalidArgumentException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -39,6 +38,27 @@ public class MerchantFactory {
             Plan per_unit_plan = new Plan("per_unit_plan", "per_unit_plan", bddFamily);
             PricePoint usdMonthlyPerUnit = new PricePoint("per_unit_plan-USD-Monthly", per_unit_plan, new PerUnit(new Money( Currency.USD,100)), BillingFrequency.MONTHLY);
             pricePoints.put(usdMonthlyPerUnit.id, usdMonthlyPerUnit);
+
+            ArrayList<PricingSlab> pricingSlabs = new ArrayList<>();
+            pricingSlabs.add(new PricingSlab(1, 100, 20));
+            pricingSlabs.add(new PricingSlab(101, 200, 10));
+            pricingSlabs.add(new PricingSlab(201,  5));
+            TieredPriceModel tieredPriceModel = new TieredPriceModel(Currency.USD, pricingSlabs);
+
+            MeteredPlan tieredPlan = new MeteredPlan(new Plan("Tiered-Plan", "Tiered-Plan", bddFamily), MeteredBillingMode.SUM_OF_ALL_USAGES);
+            PricePoint tieredPlanUSDMonthly = new PricePoint("Tiered-Plan-USD-Monthly", tieredPlan, tieredPriceModel, BillingFrequency.MONTHLY);
+            tieredPlanUSDMonthly.setQuantity(250f);
+            pricePoints.put(tieredPlanUSDMonthly.id, tieredPlanUSDMonthly);
+
+            MeteredPlan stairStepPlan = new MeteredPlan(new Plan("StairStep-Plan", "StairStep-Plan", bddFamily), MeteredBillingMode.SUM_OF_ALL_USAGES);
+            PricePoint stairStepPlanUSDMonthly = new PricePoint("StairStep-Plan-USD-Monthly", stairStepPlan, tieredPriceModel, BillingFrequency.MONTHLY);
+            stairStepPlanUSDMonthly.setQuantity(250f);
+            pricePoints.put(stairStepPlanUSDMonthly.id, stairStepPlanUSDMonthly);
+
+            MeteredPlan volumePlan = new MeteredPlan(new Plan("Volume-Plan", "Volume-Plan", bddFamily), MeteredBillingMode.SUM_OF_ALL_USAGES);
+            PricePoint volumePlanUSDMonthly = new PricePoint("Volume-Plan-USD-Monthly", volumePlan, tieredPriceModel, BillingFrequency.MONTHLY);
+            volumePlanUSDMonthly.setQuantity(250f);
+            pricePoints.put(volumePlanUSDMonthly.id, volumePlanUSDMonthly);
 
             ProductCatalog productCatalog = new ProductCatalog(pricePoints);
 
