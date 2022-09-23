@@ -101,7 +101,7 @@ public class MerchantFactory {
             ArrayList<User> users = new ArrayList<>();
             users.add(user);
             return new Merchant("Rajat",
-                    new Site(domainSuffix, config.getConfigValueByKey("siteName"), config.getConfigValueByKey("prod.siteApiKey"), productCatalog, users));
+                    new Site(domainSuffix, config.getConfigValueByKey("siteName"), config.getConfigValueByKey("siteApiKey"), productCatalog, users));
         }
     }
 }

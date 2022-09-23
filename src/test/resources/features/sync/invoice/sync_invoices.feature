@@ -2,7 +2,7 @@
 Feature: Sync Invoices to Quickbooks
 
     Scenario: Rajat syncs ChargeBee invoice to QuickBooks with a FlatFee Pricing Model
-      Given Rajat is an admin of current ChargeBee site
+      Given Rajat is an admin of ChargeBee site
       And he has a customer "John" with the email address "john@example.com"
       And he has a <item> with <amount> and currency "USD"
         | item           | amount |
@@ -14,9 +14,9 @@ Feature: Sync Invoices to Quickbooks
       When he attempts to run sync job for Quickbooks
       Then invoice with amount 120 should be synced to Quickbooks
 
-
+  @Ignore
   Scenario: Rajat syncs ChargeBee invoice to QuickBooks with a PerUnit Pricing Model
-    Given Rajat is an admin of current ChargeBee site
+    Given Rajat is an admin of ChargeBee site
     And he has a customer "John" with the email address "john@example.com"
     And he has a <item> with <unit_amount> and <quantity> and currency "USD"
       | item           | unit_amount | quantity |
@@ -31,9 +31,9 @@ Feature: Sync Invoices to Quickbooks
     When he attempts to run sync job for Quickbooks
     Then invoice with amount 250 should be synced to Quickbooks
 
-
+@Ignore
   Scenario Outline: Rajat syncs ChargeBee invoices to QuickBooks with Metered Pricing Model
-    Given Rajat is an admin of current ChargeBee site
+    Given Rajat is an admin of ChargeBee site
     And he has a customer "John" with the email address "john@example.com"
     And he has a metered pricing_model with the following tiers
       | tier        | price_per_unit |

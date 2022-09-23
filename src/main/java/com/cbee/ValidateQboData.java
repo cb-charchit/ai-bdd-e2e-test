@@ -16,7 +16,7 @@ public class ValidateQboData {
         Authentication authService = new AuthenticationService();
         QBOClient qbClient = new QBOClient();
         Token t = authService.getTheToken(integ_name);
-        String companyId= new ConfigFileReader().getConfigValueByKey("prod.qbCompanyId");
+        String companyId= new ConfigFileReader().getConfigValueByKey("qbCompanyId");
 
         String basePath = "v3/company/"+companyId+"/"+entity_type+"/"+id;
         Map<String, String> params = new HashMap<>();

@@ -44,7 +44,7 @@ public class MerchantStepDefinition {
     private GetTpDetailsTask getTpDetailsTask = new GetTpDetailsTask();
     private SyncNowTask syncNowTask = new SyncNowTask();
 
-    @Given("{actor} is an admin of current ChargeBee site")
+    @Given("{actor} is an admin of ChargeBee site")
     public void actor_is_an_admin_of_the_domain(Actor actor) {
         actor.remember("merchant", MerchantFactory.getMerchant(actor.getName()));
     }

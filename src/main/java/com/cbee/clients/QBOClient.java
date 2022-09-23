@@ -26,7 +26,7 @@ public class QBOClient {
                 .log()
                 .all()
                 .basePath(basePath)
-                .baseUri(new ConfigFileReader().getConfigValueByKey("prod.baseUrl"))
+                .baseUri(new ConfigFileReader().getConfigValueByKey("baseUrl"))
                 .queryParams(params)
                 .when().get().then().extract();
         return res;

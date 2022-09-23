@@ -28,7 +28,7 @@ public class FetchEntitiesFromQuickbooks {
         authService = new AuthenticationService();
         qbClient = new QBOClient();
         token = authService.getTheToken(QUICKBOOKS);
-        companyId = new ConfigFileReader().getConfigValueByKey("prod.qbCompanyId");
+        companyId = new ConfigFileReader().getConfigValueByKey("qbCompanyId");
         basePath = "v3/company/"+companyId;
     }
 
