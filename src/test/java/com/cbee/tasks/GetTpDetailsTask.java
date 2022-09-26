@@ -26,7 +26,7 @@ public class GetTpDetailsTask {
 
     public Performable fetchTpemDetails(Optional<String> id, String entity_type, String integ_name) {
         return Task.where("{0} fetches synced entities id's from tpem", actor -> {
-            String third_party_entity_id = getTpemData(id, entity_type, integ_name);
+            String third_party_entity_id = getThirdPartyEntityIdFromTPEM(id, entity_type, integ_name);
             ActorState.setThirdPartyIdInTheSpotLight(third_party_entity_id);
         });
     }
@@ -48,7 +48,7 @@ public class GetTpDetailsTask {
         });
     }
 
-    public String getTpemData(Optional<String> id, String entity_type, String integ_name) {
+    public String getThirdPartyEntityIdFromTPEM(Optional<String> id, String entity_type, String integ_name) {
         String basePath = "/third_party_entity_mappings/retrieve";
         params.put("integration_name", integ_name);
         params.put("entity_type", entity_type);

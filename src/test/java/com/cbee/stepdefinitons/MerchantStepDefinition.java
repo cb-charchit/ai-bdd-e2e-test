@@ -1,7 +1,6 @@
 package com.cbee.stepdefinitons;
 
 import com.cbee.ActorState;
-import com.cbee.ValidateQboData;
 import com.cbee.api.FetchEntitiesFromQuickbooks;
 import com.cbee.clients.CbClient;
 import com.cbee.integ.models.quickbooks.QBInvoice;
@@ -15,6 +14,7 @@ import com.cbee.models.subscription.CreateSubscriptionRequest;
 import com.cbee.tasks.GetTpDetailsTask;
 import com.cbee.factory.MerchantFactory;
 import com.chargebee.models.Customer;
+import com.chargebee.models.Invoice;
 import com.chargebee.models.Subscription;
 import com.google.gson.Gson;
 import io.cucumber.datatable.DataTable;
@@ -34,10 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.json.JSONObject;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 public class MerchantStepDefinition {
 
@@ -67,8 +65,7 @@ public class MerchantStepDefinition {
 
     @Then("he checked and found that sync job completed successfully")
     public void actor_should_be_able_to_run_sync_successfully() {
-        assertThat("Sync scuccessful").isEqualTo("Sync scuccessful");
-
+        //assertThat("Sync scuccessful").isEqualTo("Sync scuccessful");
     }
 
     @And("he creates a new customer {string} with the email address {string} and a {string}")
@@ -84,7 +81,7 @@ public class MerchantStepDefinition {
     }
 
     @And("he creates a new subscription for {string} with the following values")
-    public void actor_creates_subscription_for_customer(String customerName, DataTable dataTable) throws Exception {
+    public void actor_creates_subscription_for_customer(String customerName, DataTable dataTable) {
         CreateSubscriptionRequest createSubscriptionRequest =
                 CreateSubscriptionRequest.fromMap(ActorState.theTestSiteInTheSpotlight().productCatalog, dataTable.asMap());
         ActorState.setTheCreateSubscriptionRequestInTheSpotLight(createSubscriptionRequest);
@@ -153,12 +150,14 @@ public class MerchantStepDefinition {
                     + " is 1 but found " + listOfInvoiceMaps.size());
         }
         String invoiceJson = gson.toJson(((LinkedHashMap) listOfInvoiceMaps.get(0)).get("invoice"), LinkedHashMap.class);
-        JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
-        String qbInvId = new GetTpDetailsTask().getTpemData(Optional.of((String) invoiceJsonObject.get("id")), "invoice", "quickbooks");
+        //JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
+        Invoice cbInvoice = new Invoice(invoiceJson);
+        String qbInvId = new GetTpDetailsTask().getThirdPartyEntityIdFromTPEM(Optional.of(cbInvoice.id()), "invoice", "quickbooks");
         Ensure.that(qbInvId).isNotBlank();
         QBInvoice qbInvoice = new FetchEntitiesFromQuickbooks().fetchQuickbooksInvoiceByQBInvId(qbInvId);
         assertThat(qbInvoice).isNotNull();
         long syncedInvoiceAmount = qbInvoice.totalAmount();
+        qbInvoice.qbLines().get(0).qbLineDetail().lineItemRef().opt("name");
         //assertThat(syncedInvoiceAmount).isEqualTo(amount);
         theActorInTheSpotlight().attemptsTo(Ensure.that(syncedInvoiceAmount).isEqualTo(amount));
     }
