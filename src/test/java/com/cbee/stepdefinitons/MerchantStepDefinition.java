@@ -4,6 +4,7 @@ import com.cbee.ActorState;
 import com.cbee.api.FetchEntitiesFromQuickbooks;
 import com.cbee.clients.CbClient;
 import com.cbee.integ.models.quickbooks.QBInvoice;
+import com.cbee.integ.models.quickbooks.QBLine;
 import com.cbee.models.Currency;
 import com.cbee.models.InteractionMode;
 import com.cbee.models.InteractionModeApi;
@@ -22,7 +23,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-//import net.serenitybdd.rest.Ensure;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.ensure.Ensure;
 import org.assertj.core.api.Assertions;
@@ -112,13 +112,8 @@ public class MerchantStepDefinition {
     }
 
     @And("he has a customer {string} with the email address {string}")
-    public void he_has_a_customer_with_the_email_address(String customerHanlde, String email) {
-        ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHanlde);
-        Gson gson = new Gson();
-        String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
-        Customer customer = new Customer(json);
-        com.cbee.models.Customer cust = com.cbee.models.Customer.fromCbCustomer(customer);
-        setTheCustomerInTheSpotLight(cust);
+    public void he_has_a_customer_with_the_email_address(String customerHandle, String email) {
+        fetch_customer_from_CB_and_set_in_spotlight(customerHandle);
     }
 
     @And("he has a <item> with <unit_amount> and <quantity> and currency {string}")
@@ -150,16 +145,38 @@ public class MerchantStepDefinition {
                     + " is 1 but found " + listOfInvoiceMaps.size());
         }
         String invoiceJson = gson.toJson(((LinkedHashMap) listOfInvoiceMaps.get(0)).get("invoice"), LinkedHashMap.class);
-        //JSONObject invoiceJsonObject = new JSONObject(invoiceJson);
         Invoice cbInvoice = new Invoice(invoiceJson);
         String qbInvId = new GetTpDetailsTask().getThirdPartyEntityIdFromTPEM(Optional.of(cbInvoice.id()), "invoice", "quickbooks");
-        Ensure.that(qbInvId).isNotBlank();
+        theActorInTheSpotlight().attemptsTo(Ensure.that(qbInvId).isNotBlank());
         QBInvoice qbInvoice = new FetchEntitiesFromQuickbooks().fetchQuickbooksInvoiceByQBInvId(qbInvId);
         assertThat(qbInvoice).isNotNull();
         long syncedInvoiceAmount = qbInvoice.totalAmount();
         qbInvoice.qbLines().get(0).qbLineDetail().lineItemRef().opt("name");
-        //assertThat(syncedInvoiceAmount).isEqualTo(amount);
         theActorInTheSpotlight().attemptsTo(Ensure.that(syncedInvoiceAmount).isEqualTo(amount));
+        theActorInTheSpotlight().attemptsTo(Ensure.that(qbInvoice.subTotalLineDetail().getInt("Amount")*100).isEqualTo(cbInvoice.subTotal()),
+                Ensure.that(qbInvoice.currencyRef().getString("value")).isEqualTo(cbInvoice.currencyCode()),
+                Ensure.that(qbInvoice.customerRef().getString("name")).isEqualTo(cbInvoice.customerId()),//<todo> customer verification via tpem
+                Ensure.that(qbInvoice.exchangeRate()).isEqualTo(cbInvoice.exchangeRate())
+        );
+
+
+        qbInvoice.docNumber(); // conf
+        //qbInvoice.billingAddress().equals(cbInvoice.billingAddress());
+        //qbInvoice.shipFromAddress();
+        for(int i=0;i<cbInvoice.lineItems().size();i++) {
+            QBLine qbLineItem = qbInvoice.qbLines().get(i);
+            Invoice.LineItem cbLineItem = cbInvoice.lineItems().get(i);
+            QBLine.QBLineDetail qbLineDetail = qbLineItem.qbLineDetail();
+            int itemRefTPId = qbLineDetail.lineItemRef().getInt("value");
+            String itemRefName = qbLineDetail.lineItemRef().getString("name");
+            int itemAccRefTPId = qbLineDetail.lineItemAccountRef().getInt("value");
+            String itemAccRefName = qbLineDetail.lineItemAccountRef().getString("name");
+
+            theActorInTheSpotlight().attemptsTo(Ensure.that(qbLineItem.amount()).isEqualTo(Long.valueOf(cbLineItem.amount())),
+                    Ensure.that(itemRefName).isEqualTo(cbLineItem.entityId())//<todo> item verification via tpem
+            );
+
+        }
     }
 
 
@@ -169,5 +186,19 @@ public class MerchantStepDefinition {
 
     @And("he has a <item> with <amount> and currency {string}")
     public void he_has_a_item_type_with_amount_and_currency(String currency, DataTable data) {
+    }
+
+    @And("he has a customer {string} belong to {string}")
+    public void he_has_a_customer_belong_to_tax_inclusive_region(String customerHandle, String taxRegion) {
+        fetch_customer_from_CB_and_set_in_spotlight(customerHandle);
+    }
+
+    public void fetch_customer_from_CB_and_set_in_spotlight(String customerHandle) {
+        ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHandle);
+        Gson gson = new Gson();
+        String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
+        Customer customer = new Customer(json);
+        com.cbee.models.Customer cust = com.cbee.models.Customer.fromCbCustomer(customer);
+        setTheCustomerInTheSpotLight(cust);
     }
 }

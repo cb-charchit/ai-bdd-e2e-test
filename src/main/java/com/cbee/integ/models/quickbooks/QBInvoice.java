@@ -3,6 +3,7 @@ package com.cbee.integ.models.quickbooks;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,8 +45,8 @@ public class QBInvoice {
         return qbInvoiceJson.optJSONObject("CurrencyRef");
     }
 
-    public Double exchangeRate() {
-        return qbInvoiceJson.optDouble("ExchangeRate");
+    public BigDecimal exchangeRate() {
+        return qbInvoiceJson.optBigDecimal("ExchangeRate", BigDecimal.ONE);
     }
 
     public List<QBLine> qbLines() {
