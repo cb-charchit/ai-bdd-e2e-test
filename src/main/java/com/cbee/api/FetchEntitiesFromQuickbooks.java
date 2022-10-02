@@ -27,7 +27,7 @@ public class FetchEntitiesFromQuickbooks {
     public FetchEntitiesFromQuickbooks() {
         authService = new AuthenticationService();
         qbClient = new QBOClient();
-        token = authService.getTheToken(QUICKBOOKS);
+        token = authService.getToken(QUICKBOOKS);
         companyId = new ConfigFileReader().getConfigValueByKey("qbCompanyId");
         basePath = "v3/company/"+companyId;
     }
@@ -35,11 +35,11 @@ public class FetchEntitiesFromQuickbooks {
     public QBInvoice fetchQuickbooksInvoiceByQBInvId(String qbInvId) {
         String path = basePath + "/invoice/" + qbInvId;
         Map<String, String> params = new HashMap<>();
-        ExtractableResponse<Response> response = qbClient.doHttpGet(path, params, token.getAccess_token());
+        ExtractableResponse<Response> response = qbClient.doHttpGet(path, params, token.getAccessToken());
         if (response.statusCode() == 401) {
             authService.refreshTheToken();
         }
-        response = qbClient.doHttpGet(path, params, token.getAccess_token());
+        response = qbClient.doHttpGet(path, params, token.getAccessToken());
         Gson gson = new Gson();
         String json = gson.toJson(response.jsonPath().getJsonObject("Invoice"), LinkedHashMap.class);
         JSONObject jsonObject = new JSONObject(json);

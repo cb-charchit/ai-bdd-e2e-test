@@ -1,35 +1,32 @@
 package com.cbee;
 
+import com.cbee.api.FetchThirdPartyDetails;
 import com.cbee.clients.QBOClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 
-import java.io.IOException;
-
 public class AuthenticationService implements Authentication {
 
     private Token token;
-    private TpIntegConfig tpIntegConfig;
 
-    private final String access_token = "third_party_configuration.auth_json.access_token";
-    private final String refresh_token = "third_party_configuration.auth_json.refresh_token";
-    private final String expires_in = "third_party_configuration.auth_json.expires_in";
-    private final String x_refresh_token_expires_in = "third_party_configuration.auth_json.x_refresh_token_expires_in";
+    private final String accessToken = "third_party_configuration.auth_json.access_token";
+    private final String refreshToken = "third_party_configuration.auth_json.refresh_token";
+    private final String expiresIn = "third_party_configuration.auth_json.expires_in";
+    private final String xRefreshTokenExpiresIn = "third_party_configuration.auth_json.x_refresh_token_expires_in";
     private final String authType = "third_party_configuration.auth_json.authType";
-    private final String token_type = "third_party_configuration.auth_json.token_type";
+    private final String tokenType = "third_party_configuration.auth_json.token_type";
 
 
     @Override
-    public Token getTheToken(String integ_name) {
-        tpIntegConfig = new TpIntegConfig();
-        ExtractableResponse<Response> response = tpIntegConfig.getTpIntegConfigs(integ_name);
-        token = new Token(response.jsonPath().getString(access_token),
-                response.jsonPath().getString(refresh_token),
-                response.jsonPath().getString(expires_in),
-                response.jsonPath().getString(x_refresh_token_expires_in),
+    public Token getToken(String integ_name) {
+        ExtractableResponse<Response> response = FetchThirdPartyDetails.getTpIntegConfigs(integ_name);
+        token = new Token(response.jsonPath().getString(accessToken),
+                response.jsonPath().getString(refreshToken),
+                response.jsonPath().getString(expiresIn),
+                response.jsonPath().getString(xRefreshTokenExpiresIn),
                 response.jsonPath().getString(authType),
-                response.jsonPath().getString(token_type));
+                response.jsonPath().getString(tokenType));
         return token;
     }
 
@@ -42,17 +39,14 @@ public class AuthenticationService implements Authentication {
                 System.out.println("GO to UI and reset refresh token");
                 return;
             }
-            token.setAccess_token(response.jsonPath().getString("access_token"));
-
-            tpIntegConfig = new TpIntegConfig();
+            token.setAccessToken(response.jsonPath().getString("access_token"));
             String authJson = convertToJSON(token);
-            tpIntegConfig.updateTpIntegConfigs("quickbooks", authJson);
+            FetchThirdPartyDetails.updateTpIntegConfigs("quickbooks", authJson);
         } catch (Exception e) {
             System.out.println("Something went wrong while calling QBO" + e);
         }
 
     }
-
     //Move to some util
     public String convertToJSON(Object obj) {
         try {

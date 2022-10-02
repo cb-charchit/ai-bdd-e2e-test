@@ -1,70 +1,43 @@
 package com.cbee;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
 public class Token {
-    String access_token;
-    String refresh_token;
-    String expires_in;
-    String x_refresh_token_expires_in;
+    @JsonProperty("access_token")
+    String accessToken;
+    @JsonProperty("refresh_token")
+    String refreshToken;
+    @JsonProperty("expires_in")
+    String expiresIn;
+    @JsonProperty("x_refresh_token_expires_in")
+    String xRefreshTokenExpiresIn;
+    @JsonProperty("authType")
     String authType;
-    String token_type;
+    @JsonProperty("token_type")
+    String tokenType;
 
     public Token() {
     }
 
-    public Token(String access_token, String refresh_token, String expires_in, String x_refresh_token_expires_in, String authType, String token_type) {
-        this.access_token = access_token;
-        this.refresh_token = refresh_token;
-        this.expires_in = expires_in;
-        this.x_refresh_token_expires_in = x_refresh_token_expires_in;
+    public Token(String accessToken, String refresh_token, String expiresIn, String xRefreshTokenExpiresIn, String authType, String tokenType) {
+        this.accessToken = accessToken;
+        this.refreshToken = refresh_token;
+        this.expiresIn = expiresIn;
+        this.xRefreshTokenExpiresIn = xRefreshTokenExpiresIn;
         this.authType = authType;
-        this.token_type = token_type;
+        this.tokenType = tokenType;
     }
 
-    public String getAccess_token() {
-        return access_token;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public void setAccess_token(String access_token) {
-        this.access_token = access_token;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public String getRefresh_token() {
-        return refresh_token;
-    }
-
-    public void setRefresh_token(String refresh_token) {
-        this.refresh_token = refresh_token;
-    }
-
-    public String getExpires_in() {
-        return expires_in;
-    }
-
-    public void setExpires_in(String expires_in) {
-        this.expires_in = expires_in;
-    }
-
-    public String getX_refresh_token_expires_in() {
-        return x_refresh_token_expires_in;
-    }
-
-    public void setX_refresh_token_expires_in(String x_refresh_token_expires_in) {
-        this.x_refresh_token_expires_in = x_refresh_token_expires_in;
-    }
-
-    public String getAuthType() {
-        return authType;
-    }
-
-    public void setAuthType(String authType) {
-        this.authType = authType;
-    }
-
-    public String getToken_type() {
-        return token_type;
-    }
-
-    public void setToken_type(String token_type) {
-        this.token_type = token_type;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

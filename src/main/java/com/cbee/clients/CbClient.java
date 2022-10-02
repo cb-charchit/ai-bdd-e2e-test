@@ -16,6 +16,7 @@ public class CbClient {
     String baseUrl = "https://neha-singla-pc2-test.chargebee.com/api/v2";
     //String baseUrl = "http://mannar-test.localcb.in:8080/api/v2";
     String apiKey = new ConfigFileReader().getConfigValueByKey("siteApiKey");
+    String siteName = new ConfigFileReader().getConfigValueByKey("siteName");
 
     public ExtractableResponse<Response> doHttpGet(String basePath) {
         return doHttpGet(basePath, null);

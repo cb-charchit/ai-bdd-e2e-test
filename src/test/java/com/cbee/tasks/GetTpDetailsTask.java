@@ -19,8 +19,8 @@ public class GetTpDetailsTask {
 
     public Performable fetchTpIntegConfDetails(String integ_name) {
         return Task.where("{0} fetches third party integration configuration", actor -> {
-            boolean isConfigAvailable = getTpConfigs(integ_name);
-            ActorState.setConfigInTheSpotLight(isConfigAvailable);
+            String configJson = getTpConfigs(integ_name);
+            ActorState.setConfigInTheSpotLight(configJson);
         });
     }
 
@@ -31,12 +31,20 @@ public class GetTpDetailsTask {
         });
     }
 
-    public boolean getTpConfigs(String integ_name) {
+    public String getTpConfigs(String integ_name) {
         String basePath = "/third_party_configurations";
         params.put("integration_name", integ_name);
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
-        return (response.jsonPath().getString("third_party_configuration.config_json") != null);
+        return response.jsonPath().getString("third_party_configuration.config_json");
     }
+
+    public ExtractableResponse<Response>  getConfigJson(String integ_name) {
+        String basePath = "/third_party_configurations";
+        params.put("integration_name", integ_name);
+        return  new CbClient().doHttpGet(basePath, params);
+
+    }
+
 
     public Performable getAuthJson(String integ_name) {
         return Task.where("{0} fetches auth json configuration", actor -> {
@@ -55,6 +63,15 @@ public class GetTpDetailsTask {
         params.put("entity_id", id.get());
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
         return response.jsonPath().getString("third_party_entity_mapping.third_party_entity_id");
+    }
+
+
+    public ExtractableResponse<Response> getTpIntegConfs(){
+        String basePath = "/third_party_configurations";
+        Map<String,String> params= new HashMap<>();
+        params.put("integration_name", "quickbooks");
+        return  new CbClient().doHttpGet(basePath, params);
+
     }
 
 }

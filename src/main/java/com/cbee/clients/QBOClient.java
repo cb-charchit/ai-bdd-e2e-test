@@ -40,7 +40,7 @@ public class QBOClient {
                 .accept(ContentType.JSON)
                 .header(Authorization, "Basic " + getEncodedBase64Value(conf.getClientKey()+":"+conf.getClientSecret()))
                 .param("grant_type", "refresh_token")
-                .param("refresh_token", token.getRefresh_token())
+                .param("refresh_token", token.getRefreshToken())
                 .log()
                 .all()
                 .baseUri("https://oauth.platform.intuit.com")
