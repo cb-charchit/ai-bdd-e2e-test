@@ -1,9 +1,7 @@
 package com.cbee.toBeDeletedLater;
 
-import com.cbee.pages.LoginPage;
 import com.cbee.pages.ManageMappingPage;
 import com.cbee.tasks.LoginTask;
-import com.cbee.tasks.MapGLAccountTask;
 import net.serenitybdd.junit.runners.SerenityRunner;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.abilities.BrowseTheWeb;
@@ -15,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
+import static com.cbee.tasks.MapGLAccountTask.save;
+import static com.cbee.tasks.MapGLAccountTask.selectGatewayAccountMapping;
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.hamcrest.Matchers.containsString;
 
@@ -42,7 +42,8 @@ public class SaveManageMappingConfig {
         admin.attemptsTo(
 
                 LoginTask.login(),
-                MapGLAccountTask.saveAccountMappingDetails(null)
+                selectGatewayAccountMapping(null),
+                save()
         );
     }
 

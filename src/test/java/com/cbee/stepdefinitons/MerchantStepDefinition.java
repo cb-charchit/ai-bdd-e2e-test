@@ -2,6 +2,8 @@ package com.cbee.stepdefinitons;
 
 import com.cbee.ActorState;
 import com.cbee.GatewayAccountMapping;
+import com.cbee.LineItemAccountMapping;
+import com.cbee.LineItemTrackingCategorytMapping;
 import com.cbee.api.FetchThirdPartyDetails;
 import com.cbee.api.FetchEntitiesFromQuickbooks;
 import com.cbee.clients.CbClient;
@@ -9,11 +11,12 @@ import com.cbee.integ.models.quickbooks.QBInvoice;
 import com.cbee.integ.models.quickbooks.QBLine;
 import com.cbee.models.InteractionMode;
 import com.cbee.models.InteractionModeApi;
-import com.cbee.tasks.MapGLAccountTask;
-import com.cbee.tasks.SyncNowTask;
+import com.cbee.pages.ManageMappingPage;
+import com.cbee.pages.QBSyncPage;
+import com.cbee.tasks.*;
+import com.cbee.tasks.subscription.ConfigureTrackingCategory;
 import com.cbee.tasks.subscription.CreateSubscription;
 import com.cbee.models.subscription.CreateSubscriptionRequest;
-import com.cbee.tasks.GetTpDetailsTask;
 import com.cbee.factory.MerchantFactory;
 import com.cbee.utils.TpIntegConfUtil;
 import com.chargebee.models.Customer;
@@ -28,8 +31,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 //import net.serenitybdd.rest.Ensure;
 import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.actions.Open;
 import net.serenitybdd.screenplay.ensure.Ensure;
-import org.assertj.core.api.Assertions;
 
 import static com.cbee.ActorState.setTheCustomerInTheSpotLight;
 import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
@@ -44,7 +47,11 @@ import java.util.*;
 public class MerchantStepDefinition {
 
     private SyncNowTask syncNowTask = new SyncNowTask();
-    Map<String, String> gatewayGLAccountMap = new HashMap<>();
+    Map<String, String> gatewayGLAccountMap = new LinkedHashMap<>();
+    Map<String, String> lineItemGLAccountMap = new LinkedHashMap<>();
+    Map<String, String> lineItemIdMap = new LinkedHashMap<>();
+    Map<String, String> lineItemTrackingCategoryMap = new LinkedHashMap<>();
+    Map<String, String> lineItemTrackingCategoryIdMap = new LinkedHashMap<>();
 
     @Given("{actor} is an admin of ChargeBee site")
     public void actor_is_an_admin_of_the_domain(Actor actor) {
@@ -124,7 +131,6 @@ public class MerchantStepDefinition {
         }
     }
 
-
     @And("he has a <item> with <unit_amount> and <quantity> and currency {string}")
     public void he_has_a_item_with_amount_and_quantity(String currency, DataTable data) {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
@@ -134,7 +140,6 @@ public class MerchantStepDefinition {
     public void he_has_a_pricing_model_with_tiers(DataTable data) {
         // We don't need to do anything as we are already setting this during merchant creation step in test execution.
     }
-
 
     /*@When("he attempts to fetch particular Integration Configuration")
     public void actor_attempts_to_fetch_particular_integration_configuration(DataTable integ_name) {
@@ -193,7 +198,19 @@ public class MerchantStepDefinition {
     public void heHasAPlanWithPricing_modelAndQuantityOf(String model, int arg0, DataTable data) {
     }*/
 
+    @And("he has a customer {string} belong to {string}")
+    public void he_has_a_customer_belong_to_tax_inclusive_region(String customerHandle, String taxRegion) {
+        fetch_customer_from_CB_and_set_in_spotlight(customerHandle);
+    }
 
+    public void fetch_customer_from_CB_and_set_in_spotlight(String customerHandle) {
+        ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHandle);
+        Gson gson = new Gson();
+        String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
+        Customer customer = new Customer(json);
+        com.cbee.models.Customer cust = com.cbee.models.Customer.fromCbCustomer(customer);
+        setTheCustomerInTheSpotLight(cust);
+    }
 
     @When("he attempts to map GL Account for different payment gateways")
     public void he_attempts_to_map_GL_account_for_different_payment_gateways(List<GatewayAccountMapping> gatewayAccountData) {
@@ -209,6 +226,46 @@ public class MerchantStepDefinition {
         return new GatewayAccountMapping(gateway, currency, account);
     }
 
+    @When("he attempts to map GL Account for different invoice Line Items")
+    public void heAttemptsToMapGLAccountForDifferentInvoiceLineItems(List<LineItemAccountMapping> lineItemAccountData) {
+        theActorInTheSpotlight().attemptsTo(new MapGLAccountTask().mapGLAccountForInvoiceLineItems(lineItemGLAccountMap,lineItemIdMap));
+    }
+
+    @DataTableType
+    public LineItemAccountMapping lineItemAccountMapping(Map<String, String> lineItemAccountData) {
+        String lineItem = lineItemAccountData.get("Invoice Line Item");
+        String account = lineItemAccountData.get("Account");
+        String id = lineItemAccountData.get("UI Id");
+        lineItemGLAccountMap.put(lineItem, account);
+        lineItemIdMap.put(lineItem,id);
+        return new LineItemAccountMapping(lineItem,account,id);
+    }
+
+    @When("he attempts to configure tracking categories for the following line items")
+    public void heAttemptsToConfigureTrackingCategoriesForTheFollowingLineItems(List<LineItemTrackingCategorytMapping> LineItemTrackingCategoryData) {
+        theActorInTheSpotlight().attemptsTo(new ConfigureTrackingCategory().mapTrackingCategoryForInvoiceLineItems(lineItemTrackingCategoryMap,lineItemTrackingCategoryIdMap));
+    }
+
+    @DataTableType
+    public LineItemTrackingCategorytMapping lineItemTrackingCategorytMapping(Map<String, String> LineItemTrackingCategoryData) {
+        String lineItem = LineItemTrackingCategoryData.get("Invoice Line Item");
+        String trackingCategory = LineItemTrackingCategoryData.get("Class Name");
+        String id = LineItemTrackingCategoryData.get("UI Id");
+        lineItemTrackingCategoryMap.put(lineItem, trackingCategory);
+        lineItemTrackingCategoryIdMap.put(lineItem,id);
+        return new LineItemTrackingCategorytMapping(lineItem,trackingCategory,id);
+    }
+
+    @Then("tracking category should be configured properly")
+    public void trackingCategoryShouldBeConfiguredProperly() {
+
+        ExtractableResponse<Response> res = FetchThirdPartyDetails.getTpIntegConfigs("quickbooks");
+        JSONObject integMappings = TpIntegConfUtil.getIntegMappings(res);
+        for(String lineItemTrackingCategory : lineItemTrackingCategoryMap.keySet()){
+            theActorInTheSpotlight().attemptsTo(Ensure.that(lineItemTrackingCategoryMap.get(lineItemTrackingCategory)).isEqualTo((String) integMappings.get(lineItemTrackingCategoryIdMap.get(lineItemTrackingCategory)+".tracking1")));
+        }
+    }
+
     @Then("mapping should be saved in DB")
     public void mapping_should_be_saved_in_DB() {
         ExtractableResponse<Response> res = FetchThirdPartyDetails.getTpIntegConfigs("quickbooks");
@@ -220,27 +277,33 @@ public class MerchantStepDefinition {
         //System.out.println(configJson);
     }
 
-    @And("he has a customer {string} belong to {string}")
-    public void he_has_a_customer_belong_to_tax_inclusive_region(String customerHandle, String taxRegion) {
-        fetch_customer_from_CB_and_set_in_spotlight(customerHandle);
-    }
-
-    public void fetch_customer_from_CB_and_set_in_spotlight(String customerHandle) {
-        ExtractableResponse<Response> response = new CbClient().doHttpGet("/customers/" + customerHandle);
-        Gson gson = new Gson();
-        String json = gson.toJson(response.jsonPath().getJsonObject("customer"), LinkedHashMap.class);
-        Customer customer = new Customer(json);
-        com.cbee.models.Customer cust = com.cbee.models.Customer.fromCbCustomer(customer);
-        setTheCustomerInTheSpotLight(cust);
-    }
-
-    @When("he attempts to map GL Account for different invoice Line Items")
-    public void heAttemptsToMapGLAccountForDifferentInvoiceLineItems() {
-        //theActorInTheSpotlight().attemptsTo(new MapGLAccountTask().mapGLAccountForPayments());
-    }
 
     private InteractionMode api() {
         return new InteractionModeApi();
     }
 
+    @When("he attempts to perform full sync by clicking on Sync Now button")
+    public void heAttemptsToPerformFullSyncByClickingOnSyncNowButton() {
+        theActorInTheSpotlight().attemptsTo(syncNowTask.runSyncJob());
+    }
+
+    @Then("he should be able to perform full sync successfully")
+    public void heShouldBeAbleToPerformFullSyncSuccessfully() {
+        ExtractableResponse<Response> res = FetchThirdPartyDetails.getTpIntegConfigs("quickbooks");
+        JSONObject syncOverview = TpIntegConfUtil.getSyncOverview(res);
+        theActorInTheSpotlight().attemptsTo(Ensure.that("COMPLETE").isEqualTo((String) syncOverview.get("status")));
+    }
+
+    @When("he attempts to unlink {string}")
+    public void heAttemptsToUnlink(String integration) {
+        theActorInTheSpotlight().attemptsTo(new UnlinkIntegrationTask().unlinkIntegration());
+    }
+
+    @Then("he should be able to unlink the integration successfully")
+    public void heShouldBeAbleToUnlinkTheIntegrationSuccessfully() {
+        ExtractableResponse<Response> res = FetchThirdPartyDetails.getTpIntegConfigs("quickbooks");
+        JSONObject configJSON = TpIntegConfUtil.getConfigJSON(res);
+        theActorInTheSpotlight().attemptsTo(Ensure.that((Boolean) configJSON.get("isUnlinked")).isTrue());
+
+    }
 }

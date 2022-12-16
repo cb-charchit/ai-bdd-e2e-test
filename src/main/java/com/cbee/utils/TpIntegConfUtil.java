@@ -17,5 +17,9 @@ public class TpIntegConfUtil {
         return  new JSONObject(new Gson().toJson(res.jsonPath().getJsonObject("third_party_configuration.config_json.IntegMapping.mapping.map"), LinkedHashMap.class));
     }
 
+    public static JSONObject getSyncOverview(ExtractableResponse<Response> res) {
+        return  new JSONObject(new Gson().toJson(res.jsonPath().getJsonObject("third_party_configuration.config_json.SyncOverview"), LinkedHashMap.class));
+    }
+
 
 }

@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         publish = true,
         plugin = {"pretty"},
-        features = "src/test/resources/features/sync/invoice/sync_invoices.feature"
+        features = "src/test/resources/features/UI/sync_now.feature"
 )
 public class CucumberTestSuite {
 }

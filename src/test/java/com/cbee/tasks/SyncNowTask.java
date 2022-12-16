@@ -10,7 +10,7 @@ public class SyncNowTask {
     {
         return Task.where("{0} run sync job", actor -> {
             actor.attemptsTo(Open.browserOn().the(QBSyncPage.class),
-                    new LoginTask().login(),
+                    LoginTask.login(),
                     new SyncTask().sync());
             });
         }
