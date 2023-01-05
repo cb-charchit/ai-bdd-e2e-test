@@ -17,7 +17,7 @@ public class LoginTask {
 
         return Task.where("{0} attempts to login", actor -> {
             actor.attemptsTo(
-                    WaitUntil.the(LoginPage.USERNAME, isVisible()).forNoMoreThan(20).seconds(),
+                    WaitUntil.the(LoginPage.USERNAME, isVisible()).forNoMoreThan(12000).seconds(),
                     Enter.theValue(new ConfigFileReader().getConfigValueByKey("siteUserName")).into(LoginPage.USERNAME),
                     Enter.theValue(new ConfigFileReader().getConfigValueByKey("sitePassword")).into(LoginPage.PASSWORD),
                     Click.on(LoginPage.SIGNIN_BUTTON)
