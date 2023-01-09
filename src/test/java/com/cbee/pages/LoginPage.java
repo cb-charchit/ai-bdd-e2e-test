@@ -1,7 +1,8 @@
 package com.cbee.pages;
 
+import net.serenitybdd.core.annotations.findby.By;
 import net.serenitybdd.screenplay.targets.Target;
-import org.openqa.selenium.By;
+
 
 public class LoginPage {
     public static final Target USERNAME =

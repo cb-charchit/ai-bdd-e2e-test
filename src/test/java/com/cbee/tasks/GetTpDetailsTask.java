@@ -15,30 +15,48 @@ import static io.restassured.RestAssured.given;
 
 public class GetTpDetailsTask {
 
-    static Map<String, String> params = new HashMap<>();
+    private Map<String, String> params = new HashMap<>();
 
-    public static Performable fetchTpIntegConfDetails(String integ_name) {
+    public Performable fetchTpIntegConfDetails(String integ_name) {
         return Task.where("{0} fetches third party integration configuration", actor -> {
-            boolean isConfigAvailable = getTpConfigs(integ_name);
-            ActorState.setConfigInTheSpotLight(isConfigAvailable);
+            String configJson = getTpConfigs(integ_name);
+            ActorState.setConfigInTheSpotLight(configJson);
         });
     }
 
-    public static Performable fetchTpemDetails(Optional<String> id, String entity_type, String integ_name) {
+    public Performable fetchTpemDetails(Optional<String> id, String entity_type, String integ_name) {
         return Task.where("{0} fetches synced entities id's from tpem", actor -> {
-            String third_party_entity_id = getTpemData(id, entity_type, integ_name);
+            String third_party_entity_id = getThirdPartyEntityIdFromTPEM(id, entity_type, integ_name);
             ActorState.setThirdPartyIdInTheSpotLight(third_party_entity_id);
         });
     }
 
-    public static boolean getTpConfigs(String integ_name) {
+    public String getTpConfigs(String integ_name) {
         String basePath = "/third_party_configurations";
         params.put("integration_name", integ_name);
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
-        return (response.jsonPath().getString("third_party_configuration.config_json") != null);
+        return response.jsonPath().getString("third_party_configuration.config_json");
     }
 
-    public static String getTpemData(Optional<String> id, String entity_type, String integ_name) {
+    public ExtractableResponse<Response>  getConfigJson(String integ_name) {
+        String basePath = "/third_party_configurations";
+        params.put("integration_name", integ_name);
+        return  new CbClient().doHttpGet(basePath, params);
+
+    }
+
+
+    public Performable getAuthJson(String integ_name) {
+        return Task.where("{0} fetches auth json configuration", actor -> {
+            String basePath = "/third_party_configurations";
+            params.put("integration_name", integ_name);
+            ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
+            String authJson=  response.jsonPath().getString("third_party_configuration.auth_json.access_token");
+           // new QboIntegration().setAccessToken(authJson);
+        });
+    }
+
+    public String getThirdPartyEntityIdFromTPEM(Optional<String> id, String entity_type, String integ_name) {
         String basePath = "/third_party_entity_mappings/retrieve";
         params.put("integration_name", integ_name);
         params.put("entity_type", entity_type);
@@ -46,4 +64,14 @@ public class GetTpDetailsTask {
         ExtractableResponse<Response> response = new CbClient().doHttpGet(basePath, params);
         return response.jsonPath().getString("third_party_entity_mapping.third_party_entity_id");
     }
+
+
+    public ExtractableResponse<Response> getTpIntegConfs(){
+        String basePath = "/third_party_configurations";
+        Map<String,String> params= new HashMap<>();
+        params.put("integration_name", "quickbooks");
+        return  new CbClient().doHttpGet(basePath, params);
+
+    }
+
 }

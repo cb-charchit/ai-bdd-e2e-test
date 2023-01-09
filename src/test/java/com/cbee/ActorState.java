@@ -11,8 +11,7 @@ import static net.serenitybdd.screenplay.actors.OnStage.theActorInTheSpotlight;
 
 public class ActorState {
 
-    private ActorState()
-    {}
+    private ActorState() {}
 
     public static void setTheNewlyCreatedCustomerInTheSpotLight(Customer customer) {
         theActorInTheSpotlight().remember("new_customer", customer);
@@ -36,12 +35,12 @@ public class ActorState {
         return theActorInTheSpotlight().recall("thirdPartyId");
     }
 
-    public static void setConfigInTheSpotLight(boolean isConfigAvailable) {
-        theActorInTheSpotlight().remember("isConfigAvailable", isConfigAvailable);
+    public static void setConfigInTheSpotLight(String configJson) {
+        theActorInTheSpotlight().remember("configJson", configJson);
     }
 
     public static boolean configInTheSpotLight() {
-        return theActorInTheSpotlight().recall("isConfigAvailable");
+        return theActorInTheSpotlight().recall("configJson");
     }
 
     public static void setThePaymentMethodInTheSpotlight(PaymentMethod paymentMethod) {

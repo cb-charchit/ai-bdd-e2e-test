@@ -80,9 +80,9 @@ public class Site {
         return Optional.of(listResult.get(0).subscription());
     }
 
-    public Optional<Invoice> fetchInvoiceByCustomerId(String customerId) throws Exception {
+    public Optional<QBInvoice> fetchInvoiceByCustomerId(String customerId) throws Exception {
         ListResult listResult =
-                Invoice.list().customerId().is(customerId).request(environment);
+                QBInvoice.list().customerId().is(customerId).request(environment);
         if (listResult.size() != 1) {
             return Optional.empty();
         }
@@ -151,16 +151,17 @@ public class Site {
         }
 
         for (int i = 0; i < createSubscriptionRequest.chargePricePoints.size(); i++) {
+            int addonCount= createSubscriptionRequest.addonPricePoints.size();
             createSubscriptionWithItemsRequest =
                     createSubscriptionWithItemsRequest
-                            .subscriptionItemItemPriceId(i + 1 + createSubscriptionRequest.addonPricePoints.size(),
+                            .subscriptionItemItemPriceId(i + 1 + addonCount,
                                     createSubscriptionRequest.chargePricePoints.get(i).id);
             PricePoint pricePoint = createSubscriptionRequest.chargePricePoints.get(i);
             if (pricePoint.hasQuantity()) {
                 createSubscriptionWithItemsRequest =
                         pricePoint.isQuantityInInteger().get()
-                                ? createSubscriptionWithItemsRequest.subscriptionItemQuantity(i + 1, pricePoint.getQuantity().get().intValue())
-                                : createSubscriptionWithItemsRequest.subscriptionItemQuantityInDecimal(i  + 1, pricePoint.getQuantity().get().toString());
+                                ? createSubscriptionWithItemsRequest.subscriptionItemQuantity(i + 1 + addonCount, pricePoint.getQuantity().get().intValue())
+                                : createSubscriptionWithItemsRequest.subscriptionItemQuantityInDecimal(i  + 1 + addonCount, pricePoint.getQuantity().get().toString());
             }
         }
 
@@ -237,7 +238,7 @@ public class Site {
     }
 
     public Money nextBillingInvoiceAmountFor(String customerId) throws Exception {
-        ListResult result = Invoice.list().customerId().is(customerId).request(environment);
+        ListResult result = QBInvoice.list().customerId().is(customerId).request(environment);
         Integer total = result.get(0).invoice().total();
         String currencyCode = result.get(0).invoice().currencyCode();
         return Money.fromLowestDenomination(Currency.valueOf(currencyCode), total);

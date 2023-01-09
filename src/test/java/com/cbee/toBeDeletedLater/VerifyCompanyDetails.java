@@ -17,7 +17,7 @@ import static net.serenitybdd.rest.SerenityRest.given;
 @RunWith(SerenityRunner.class)
 public class VerifyCompanyDetails {
 
-    public static String companyName;
+    public String companyName;
 
     @Before
     public void prepareRestConfig() {
@@ -34,7 +34,7 @@ public class VerifyCompanyDetails {
         customer.attemptsTo(Ensure.that("Neha").isEqualTo("Neha"));
     }
 
-    public static Performable getCompanyNameViApi() {
+    public Performable getCompanyNameViApi() {
         String username = "test_VaPtEoC3nsnYJNRaFP0puyWWwMqPUPTs";
         String password = "test_VaPtEoC3nsnYJNRaFP0puyWWwMqPUPTs";
 
